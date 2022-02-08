@@ -13,6 +13,7 @@ import requests
 from PIL import Image
 
 from sahi.utils.file import Path
+from transliterate import translit
 
 
 class Colors:
@@ -49,15 +50,15 @@ class Colors:
 
     @staticmethod
     def hex2rgb(h):  # rgb order
-        return tuple(int(h[1 + i : 1 + i + 2], 16) for i in (0, 2, 4))
+        return tuple(int(h[1 + i: 1 + i + 2], 16) for i in (0, 2, 4))
 
 
 def crop_object_predictions(
-    image: np.ndarray,
-    object_prediction_list,
-    output_dir: str = "",
-    file_name: str = "prediction_visual",
-    export_format: str = "png",
+        image: np.ndarray,
+        object_prediction_list,
+        output_dir: str = "",
+        file_name: str = "prediction_visual",
+        export_format: str = "png",
 ):
     """
     Crops bounding boxes over the source image and exports it to output folder.
@@ -79,9 +80,9 @@ def crop_object_predictions(
         # deepcopy crops so that original is not altered
         cropped_img = copy.deepcopy(
             image[
-                int(bbox[1]) : int(bbox[3]),
-                int(bbox[0]) : int(bbox[2]),
-                :,
+            int(bbox[1]): int(bbox[3]),
+            int(bbox[0]): int(bbox[2]),
+            :,
             ]
         )
         save_path = os.path.join(
@@ -211,16 +212,16 @@ def apply_color_mask(image: np.ndarray, color: tuple):
 
 
 def visualize_prediction(
-    image: np.ndarray,
-    boxes: List[List],
-    classes: List[str],
-    masks: Optional[List[np.ndarray]] = None,
-    rect_th: float = None,
-    text_size: float = None,
-    text_th: float = None,
-    color: tuple = None,
-    output_dir: Optional[str] = None,
-    file_name: Optional[str] = "prediction_visual",
+        image: np.ndarray,
+        boxes: List[List],
+        classes: List[str],
+        masks: Optional[List[np.ndarray]] = None,
+        rect_th: float = None,
+        text_size: float = None,
+        text_th: float = None,
+        color: tuple = None,
+        output_dir: Optional[str] = None,
+        file_name: Optional[str] = "prediction_visual",
 ):
     """
     Visualizes prediction classes, bounding boxes over the source image
@@ -293,15 +294,16 @@ def visualize_prediction(
 
 
 def visualize_object_predictions(
-    image: np.array,
-    object_prediction_list,
-    rect_th: int = None,
-    text_size: float = None,
-    text_th: float = None,
-    color: tuple = None,
-    output_dir: Optional[str] = None,
-    file_name: str = "prediction_visual",
-    export_format: str = "png",
+        image: np.array,
+        object_prediction_list,
+        rect_th: int = None,
+        text_size: float = None,
+        text_th: float = None,
+        color: tuple = None,
+        output_dir: Optional[str] = None,
+        file_name: str = "prediction_visual",
+        export_format: str = "png",
+        use_translit: bool = False
 ):
     """
     Visualizes prediction category names, bounding boxes over the source image
@@ -361,6 +363,8 @@ def visualize_object_predictions(
         )
         # arange bounding box text location
         label = f"{category_name} {score:.2f}"
+        if use_translit:
+            label = translit(label, "ru", reversed=True)
         w, h = cv2.getTextSize(label, 0, fontScale=text_size, thickness=text_th)[0]  # label width, height
         outside = p1[1] - h - 3 >= 0  # label fits outside box
         p2 = p1[0] + w, p1[1] - h - 3 if outside else p1[1] + h + 3
